@@ -1,3 +1,5 @@
+"""Standard variables for most analyses
+"""
 from hax.minitrees import TreeMaker
 from collections import defaultdict
 
@@ -27,7 +29,8 @@ class Basics(TreeMaker):
     Notes:
      * 'largest' refers to uncorrected area.
      * 'uncorrected' refers to the area in pe without applying ANY position- or saturation corrections.
-     * 'corrected' refers to applying ALL position- and/or saturation corrections (depending on pax configuration used)
+     * 'corrected' refers to applying all available position- and/or saturation corrections
+       (see https://github.com/XENON1T/pax/blob/master/pax/plugins/interaction_processing/BuildInteractions.py#L105)
      * 'main interaction' is event.interactions[0], which is determined by pax
                           (currently just the largest S1 + largest S2 after it)
 
@@ -38,11 +41,13 @@ class Basics(TreeMaker):
     def extract_data(self, event):
         # Convert from XENON100 dataset name (like xe100_120402_2000_000000.xed) to number
         dsetname = event.dataset_name
-        if dsetname.endswith('.eve'):
+        if dsetname.endswith('.xed'):
             filename = dsetname.split("/")[-1]
-            #_, date, splitnumber = filename.split('_')
-            #dataset_number = int(date) * 1e4 + int(splitnumber[:-5])
-            dataset_number = int(filename[-7:-4])
+            _, date, time, _ = filename.split('_')
+            dataset_number = int(date) * 1e4 + int(time)
+        else:
+            # TODO: XENON1T support
+            dataset_number = 0
 
         event_data = dict(event_number=event.event_number,
                           event_time=event.start_time,
@@ -94,3 +99,56 @@ class Basics(TreeMaker):
                                largest_coincidence=largest_area_of_type['coincidence']))
 
         return event_data
+
+
+class PeakProperties(TreeMaker):
+    """Largest peak properties for each type and for all peaks.
+
+    """
+    extra_branches = ['peaks.area_fraction_top',
+                      'peaks.bottom_hitpattern_spread',
+                      'peaks.hit_time_std',
+                      'peaks.n_hits',
+                      'peaks.area',
+                      'peaks.n_saturated_channels']
+    __version__ = '0.0.1'
+
+    def extract_data(self, event):  # This runs on each event
+        # 'values' is returned once filled and each field defaults to zero.
+        values = defaultdict(float)
+
+        # Store the start time of the event
+        values['time'] = event.start_time
+
+        peaks_values = {}  # type name -> index
+
+        # If no peaks, just continue
+        if event.peaks.size() == 0:
+            return values
+
+        for i, peak in enumerate(event.peaks):
+            if peak.type not in peaks_values:
+                peaks_values[peak.type] = i
+
+            type_key = 'largest_%s' % peak.type
+            biggest_peak_this_type = event.peaks[peaks_values[type_key]]
+
+            if peak.area > biggest_peak_this_type.area:
+                peaks_values[type_key] = i
+
+            if 'largest_peak' not in peaks_values:
+                peaks_values['largest_peak'] = i
+            if peak.area > event.peaks[peaks_values['largest_peak']].area:
+                peaks_values['largest_peak'] = i
+
+        for name, index in peaks_values.items():
+            peak = event.peaks[index]
+            # The store each peak field we want in 'values'
+            for field in self.extra_branches:
+                field = field[6:]
+                field_name = '%s_%s' % (name,
+                                        field)
+                values[field_name] = getattr(peak,
+                                             field)
+
+        return values

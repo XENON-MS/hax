@@ -1,12 +1,12 @@
 .. hax documentation master file, created by
-   sphinx-quickstart on Tue Feb  2 16:30:28 2016.
+   sphinx-quickstart on Sun Mar 20 14:38:00 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 Welcome to hax's documentation!
 ===============================
 
-Please see the notebook `https://github.com/XENON1T/hax/blob/master/examples/Hax_tutorial.ipynb` for a tutorial on how to use hax.
+Please see the notebooks at `https://github.com/XENON1T/hax/tree/master/examples` for a tutorial and several more in-depth examples on how to use hax.
 
 Contents:
 
@@ -14,6 +14,9 @@ Contents:
    :maxdepth: 4
 
    hax
+
+.. automodule:: hax
+
 
 
 Indices and tables
