@@ -40,7 +40,6 @@ def get_rundb_collection():
 
 def update_datasets():
     """Update hax.runs.datasets to contain latest datasets.
-    Currently just loads XENON100 run 10 runs from a csv file.
     """
     global datasets
     experiment = hax.config['experiment']
@@ -71,6 +70,12 @@ def update_datasets():
             doc['raw_data_subfolder'] = ''      # For the moment, everything is in one folder
             docs.append(doc)
         datasets = pd.DataFrame(docs)
+    else:
+        dsets = pd.DataFrame(columns=["name","number","raw_data_subfolder","source","position","trigger","anode","cathode","shield","livetime","corrected_livetime","events","corrected_events","processed","category","comment"])
+        if datasets is not None and len(datasets):
+            datasets = dsets
+        else:
+            datasets = pd.concat((datasets, dsets))
 
     # What dataset names do we have?
     dataset_names = datasets['name'].values

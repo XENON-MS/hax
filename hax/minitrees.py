@@ -117,8 +117,8 @@ def get(dataset, treemaker, force_reload=False):
         skimmed_data = treemaker().get_data(dataset)
         print("Created minitree %s for dataset %s" % (treemaker.__name__, dataset))
 
-        # Make a minitree in the current directory
-        minitree_path = './' + minitree_filename
+        # Make a minitree
+        minitree_path = hax.config['mini_tree_paths'][0] + minitree_filename
         root_numpy.array2root(skimmed_data.to_records(), minitree_path,
                               treename=treemaker.__name__, mode='recreate')
 
