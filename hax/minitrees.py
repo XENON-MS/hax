@@ -95,7 +95,7 @@ def get(dataset, treemaker, force_reload=False):
                                         treemaker_name)
 
     try:
-        minitree_path = find_file_in_folders(minitree_filename, hax.config['mini_tree_paths'])
+        minitree_path = find_file_in_folders(minitree_filename, hax.config['minitree_paths'])
         print("Found minitree at %s" % minitree_path)
 
         # Check the version of the minitree file
@@ -118,7 +118,7 @@ def get(dataset, treemaker, force_reload=False):
         print("Created minitree %s for dataset %s" % (treemaker.__name__, dataset))
 
         # Make a minitree
-        minitree_path = hax.config['mini_tree_paths'][0] + minitree_filename
+        minitree_path = hax.config['minitree_paths'][0] + minitree_filename
         root_numpy.array2root(skimmed_data.to_records(), minitree_path,
                               treename=treemaker.__name__, mode='recreate')
 
